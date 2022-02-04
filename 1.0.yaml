@@ -1,0 +1,264 @@
+openapi: 3.0.0
+info:
+  title: '1.0'
+  version: '1.0'
+servers: []
+paths:
+  /records:
+    get:
+      summary: Get all records
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Record'
+              examples: {}
+      operationId: get-record
+    post:
+      summary: ''
+      operationId: post-record
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewRecord'
+        description: ''
+    parameters: []
+  /accounts:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+              examples: {}
+      operationId: get-account
+    parameters: []
+  '/accounts/{id}/records':
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: The id of the account to query
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountWithRecords'
+      operationId: get-account-id-records
+      parameters: []
+      description: ''
+  '/records/{id}/revert':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+        description: The id of the record to be reverted
+    post:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '405':
+          description: Method Not Allowed - This method can not be called on reverting records.
+          headers: {}
+      operationId: get-records-id-revert
+      description: Allows to revert a record. It can not be called on reverting records.
+  /taxes:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tax'
+      operationId: get-tax
+    parameters: []
+  /recurringRecords:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses: {}
+      operationId: get-recurringRecords
+  '/recurringRecords/{id}':
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses: {}
+      operationId: get-recurringRecords-id
+    delete:
+      summary: ''
+      operationId: delete-recurringRecords-id
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    Account:
+      title: Account
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - id
+        - name
+    BaseRecord:
+      title: BaseRecord
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The id of the record
+          readOnly: true
+        description:
+          type: string
+          description: The description for the record
+        amount:
+          type: number
+          description: The amount to be transfered
+        bookingDate:
+          type: string
+          format: date
+        from:
+          $ref: '#/components/schemas/Account'
+        to:
+          $ref: '#/components/schemas/Account'
+        creationTime:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - description
+        - amount
+        - bookingDate
+        - from
+        - to
+        - creationTime
+    Record:
+      title: Record
+      allOf:
+        - $ref: '#/components/schemas/BaseRecord'
+        - type: object
+          properties:
+            taxRecord:
+              type: integer
+            taxedRecord:
+              type: integer
+            revertingRecord:
+              type: integer
+            revertedRecord:
+              type: integer
+      description: ''
+      x-examples: {}
+    NewRecord:
+      title: NewRecord
+      allOf:
+        - $ref: '#/components/schemas/Record'
+        - type: object
+          properties:
+            taxRecord:
+              $ref: '#/components/schemas/Record'
+    AccountWithRecords:
+      title: AccountWithRecords
+      allOf:
+        - $ref: '#/components/schemas/Account'
+        - type: object
+          properties:
+            incomingRecords:
+              type: array
+              items:
+                $ref: '#/components/schemas/Record'
+        - type: object
+          properties:
+            outgoingRecords:
+              type: array
+              items:
+                $ref: '#/components/schemas/Record'
+      x-examples: {}
+    Tax:
+      title: Tax
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        tax:
+          type: number
+          description: Tax amount as number between 0 an 1
+          minimum: 0
+          maximum: 1
+      required:
+        - id
+        - name
+        - tax
+    NewRecurringRecord:
+      title: NewRecurringRecord
+      allOf:
+        - $ref: '#/components/schemas/NewRecord'
+        - $ref: '#/components/schemas/RecurrenceInterval'
+    RecurringRecord:
+      allOf:
+        - $ref: '#/components/schemas/BaseRecord'
+        - $ref: '#/components/schemas/RecurrenceInterval'
+    RecurrenceInterval:
+      title: RecurrenceInterval
+      type: object
+      properties:
+        value:
+          type: string
+          enum:
+            - DAYLY
+            - MONTHLY
+            - QUARTERLY
+            - YEARLY
+      required:
+        - value
+  securitySchemes: {}
