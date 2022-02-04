@@ -135,6 +135,14 @@ paths:
       responses:
         '200':
           description: OK
+  /ping:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+      operationId: get-ping
 components:
   schemas:
     Account:
