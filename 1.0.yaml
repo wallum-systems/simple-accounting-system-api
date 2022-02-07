@@ -83,7 +83,7 @@ paths:
         required: true
         description: The id of the record to be reverted
     post:
-      summary: Your GET endpoint
+      summary: Revert record
       tags: []
       responses:
         '202':
@@ -95,7 +95,7 @@ paths:
         '405':
           description: Method Not Allowed - This method can not be called on reverting records.
           headers: {}
-      operationId: get-records-id-revert
+      operationId: post-revert-record
       description: Allows to revert a record. It can not be called on reverting records.
   /taxes:
     get:
