@@ -77,7 +77,7 @@ paths:
   '/records/{id}/revert':
     parameters:
       - schema:
-          type: string
+          type: integer
         name: id
         in: path
         required: true
@@ -87,13 +87,15 @@ paths:
       tags: []
       responses:
         '202':
-          description: Accepted
+          description: 'Accepted - Returns the record associated with the given id, which is now reverted'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Record'
+        '404':
+          description: Not Found - No record was found for the given id
         '405':
-          description: Method Not Allowed - This method can not be called on reverting records.
+          description: Method Not Allowed - This method can not be called on reverting records and tax records.
           headers: {}
       operationId: post-revert-record
       description: Allows to revert a record. It can not be called on reverting records.
