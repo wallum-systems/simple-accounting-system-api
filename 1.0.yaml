@@ -30,6 +30,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Record'
+        '400':
+          description: Bad Request
       requestBody:
         content:
           application/json:
