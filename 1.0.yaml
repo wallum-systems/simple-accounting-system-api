@@ -2,43 +2,12 @@ openapi: 3.0.0
 info:
   title: '1.0'
   version: '1.0'
+  license:
+    name: MIT
+    url: 'https://github.com/wallum-systems/simple-accounting-system-api/blob/master/LICENSE'
 servers:
   - url: /v1.0
 paths:
-  /records:
-    get:
-      summary: Get all records
-      tags: []
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Record'
-              examples: {}
-      operationId: get-record
-    post:
-      summary: ''
-      operationId: post-record
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Record'
-        '400':
-          description: Bad Request
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NewRecord'
-        description: ''
-    parameters: []
   /accounts:
     get:
       summary: Your GET endpoint
@@ -76,6 +45,70 @@ paths:
       operationId: get-account-id-records
       parameters: []
       description: ''
+  /ping:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+      operationId: get-ping
+  /records:
+    get:
+      summary: Get all records
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Record'
+              examples: {}
+      operationId: get-record
+    post:
+      summary: ''
+      operationId: post-record
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '400':
+          description: Bad Request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewRecord'
+        description: ''
+    parameters: []
+  '/records/{id}/receipts':
+    parameters:
+      - schema:
+          type: integer
+        name: id
+        in: path
+        required: true
+        description: The id of the record
+    post:
+      summary: ''
+      operationId: post-records-id-receipt
+      responses:
+        '201':
+          description: Created - The receipt was successfully added to the record.
+      description: Add a receipt to the booking
+      requestBody:
+        content:
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+        description: The receipt of the record
   '/records/{id}/revert':
     parameters:
       - schema:
@@ -101,21 +134,6 @@ paths:
           headers: {}
       operationId: post-revert-record
       description: Allows to revert a record. It can not be called on reverting records.
-  /taxes:
-    get:
-      summary: Your GET endpoint
-      tags: []
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Tax'
-      operationId: get-tax
-    parameters: []
   /recurringRecords:
     get:
       summary: Your GET endpoint
@@ -140,14 +158,21 @@ paths:
       responses:
         '200':
           description: OK
-  /ping:
+  /taxes:
     get:
       summary: Your GET endpoint
       tags: []
       responses:
         '200':
           description: OK
-      operationId: get-ping
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tax'
+      operationId: get-tax
+    parameters: []
 components:
   schemas:
     Account:
@@ -161,63 +186,6 @@ components:
       required:
         - id
         - name
-    BaseRecord:
-      title: BaseRecord
-      type: object
-      properties:
-        id:
-          type: integer
-          description: The id of the record
-          readOnly: true
-        description:
-          type: string
-          description: The description for the record
-        amount:
-          type: number
-          description: The amount to be transfered
-        bookingDate:
-          type: string
-          format: date
-        from:
-          $ref: '#/components/schemas/Account'
-        to:
-          $ref: '#/components/schemas/Account'
-        creationTime:
-          type: string
-          format: date-time
-          readOnly: true
-      required:
-        - id
-        - description
-        - amount
-        - bookingDate
-        - from
-        - to
-        - creationTime
-    Record:
-      title: Record
-      allOf:
-        - $ref: '#/components/schemas/BaseRecord'
-        - type: object
-          properties:
-            taxRecord:
-              type: integer
-            taxedRecord:
-              type: integer
-            revertingRecord:
-              type: integer
-            revertedRecord:
-              type: integer
-      description: ''
-      x-examples: {}
-    NewRecord:
-      title: NewRecord
-      allOf:
-        - $ref: '#/components/schemas/Record'
-        - type: object
-          properties:
-            taxRecord:
-              $ref: '#/components/schemas/Record'
     AccountWithRecords:
       title: AccountWithRecords
       allOf:
@@ -234,6 +202,70 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Record'
+      x-examples: {}
+    BaseRecord:
+      title: BaseRecord
+      allOf:
+        - $ref: '#/components/schemas/NoDateBaseRecord'
+        - type: object
+          properties:
+            bookingDate:
+              type: string
+              format: date
+          required:
+            - bookingDate
+    NewRecord:
+      title: NewRecord
+      allOf:
+        - $ref: '#/components/schemas/BaseRecord'
+        - type: object
+          properties:
+            taxRecord:
+              $ref: '#/components/schemas/NoDateBaseRecord'
+    NoDateBaseRecord:
+      title: BaseRecord
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The id of the record
+          readOnly: true
+        description:
+          type: string
+          description: The description for the record
+        amount:
+          type: number
+          description: The amount to be transfered
+        fromAccountId:
+          type: integer
+        toAccountId:
+          type: integer
+        creationTime:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - description
+        - amount
+        - fromAccountId
+        - toAccountId
+        - creationTime
+    Record:
+      title: Record
+      allOf:
+        - $ref: '#/components/schemas/BaseRecord'
+        - type: object
+          properties:
+            taxRecord:
+              type: integer
+            taxedRecord:
+              type: integer
+            revertingRecord:
+              type: integer
+            revertedRecord:
+              type: integer
+      description: ''
       x-examples: {}
     Tax:
       title: Tax
