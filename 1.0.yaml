@@ -120,6 +120,7 @@ paths:
             encoding:
               receipt:
                 contentType: application/pdf
+            examples: {}
   '/records/{id}/revert':
     parameters:
       - schema:
